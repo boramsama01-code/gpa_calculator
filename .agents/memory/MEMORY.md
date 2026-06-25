@@ -1,0 +1,2 @@
+- [Clerk React v6 API](clerk-react-v6.md) — v6 uses `Show` not `SignedIn`/`SignedOut`; `publishableKeyFromHost` from `@clerk/react/internal`
+- [Tailwind v4 CSS import order](tailwind-v4-css.md) — Google Fonts must be loaded via HTML link tag, NOT @import url() in CSS
