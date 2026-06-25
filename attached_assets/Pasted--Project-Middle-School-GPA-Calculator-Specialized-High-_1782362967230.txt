@@ -1,0 +1,52 @@
+# Project: Middle School GPA Calculator & Specialized High School Admission Consulting Web App
+You are an expert Full-Stack Developer. Build a comprehensive web application using Next.js (App Router), Tailwind CSS, Supabase (for Authentication and PostgreSQL Database), and OpenAI API.
+
+## 1. Tech Stack & Setup
+- Frontend: Next.js (React), Tailwind CSS, shadcn/ui (for UI components)
+- Backend/Database: Supabase (Auth, PostgreSQL)
+- AI Integration: OpenAI API (gpt-4o)
+
+## 2. Database Schema (Supabase)
+Create the following tables and ensure Row Level Security (RLS) is configured:
+1. `regional_policies`: (Admin only) id, region_name, target_year, total_max_score, academic_score, attendance_score, volunteer_score, activity_score, grading_scale (JSON), semester_weights (JSON).
+2. `users`: id, role (admin/student), created_at.
+3. `students`: user_id, region_id, target_school_type (Array: Science, Gifted, Jeonsago, Foreign, International).
+4. `grades`: user_id, semester, subject, raw_score, standard_deviation, average, rank, top_percentage, achievement_level.
+5. `activities`: user_id, semester, activity_type (officer, award), details.
+6. `student_records`: user_id, subject, record_text (생기부 세특 내용).
+
+## 3. Core Features & Pages
+
+### A. Admin Dashboard (/admin)
+- CRUD interface for `regional_policies`.
+- Admins can input and update regional scoring rules (e.g., Max score 200 or 300, weight per semester, conversion logic).
+
+### B. User Authentication (/login)
+- Implement login/signup using Supabase Auth.
+- Each user can only access and manage their own data.
+
+### C. Data Input Steps (/input)
+- Step 1 (Region & Target): User selects their region (fetches data from `regional_policies`) and target school types.
+- Step 2 (Grades): Input table per semester/subject. Fields: 원점수, 과목평균, 표준편차, 석차, 상위백분율, 성취도. 
+  - *Data Handling Logic*: If only some data (e.g., raw score, average, std_dev) is provided, mathematically estimate the missing values (e.g., Z-score, top percentage, achievement level A/B/C/D/E). Ignore unentered subjects or semesters.
+- Step 3 (Extracurriculars): Input officer points, awards per semester.
+- Step 4 (Records): Textarea to input detailed record text (생기부 서술) per subject.
+
+### D. Calculation Engine & Results Dashboard (/results)
+- Based on the user's selected region, fetch the formula from `regional_policies` and calculate the Total Score.
+- Display eligible schools based on the selected region and target school types.
+- Evaluation Status: Compare calculated score against estimated cutoff data for the target schools. Display status as one of three: [충족 (Met), 근접 (Close), 미달 (Below)].
+- Achievement Rate: Show a progress bar (%) towards the cutoff.
+- Gap Analysis: If status is 'Close' or 'Below', highlight exactly which areas (e.g., specific semester grades, lack of activity points) are lacking.
+
+### E. AI Consulting Tab (/consulting)
+- Send the user's `student_records` (생기부) and calculated grade data to OpenAI API.
+- System Prompt for AI: "You are an expert high school admission consultant. Based on the student's records and grades, analyze their suitability for the [Target School Type]. Structure your response in 3 sections: 1. Academic Excellence (based on achievement rate), 2. Inquiry Capability (based on student records text), 3. Weaknesses & Improvement Plan. Maintain a highly objective and analytical tone."
+- Display the generated AI report in a clean, readable format.
+
+## 4. Development Constraints
+- Use modular components. Separate the calculation logic (Strategy Pattern for regions) from the UI components.
+- Ensure the UI is responsive, intuitive, and uses loading states during AI generation and DB fetching.
+- Write clean, production-ready code with appropriate error handling for missing inputs.
+
+Start by setting up the database schema and the Admin Dashboard for regional policies.
