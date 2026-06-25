@@ -16,19 +16,23 @@ export default function InputPage() {
 
   // Simple state for demo
   const [regionId, setRegionId] = useState("");
-  const [semester, setSemester] = useState("1-1");
+  const [semester, setSemester] = useState("1-2");   // 자유학기 1-1 대신 1-2가 기본
   const [subject, setSubject] = useState("");
   const [rawScore, setRawScore] = useState("");
 
   const { data: policies } = useListPolicies({ query: { queryKey: ["policies"] } });
-  
+
   const saveProfileMutation = useSaveStudentProfile({
     mutation: {
       onSuccess: () => {
         toast({ title: "프로필 저장됨", description: "성공적으로 저장되었습니다." });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
-      }
-    }
+        setStep("grades");                       // 성공 시 다음 탭으로 이동
+      },
+      onError: (e: any) => {                      // 실패가 조용히 묻히던 원인
+        toast({ title: "저장 실패", description: `${e?.status ?? ""} ${e?.message ?? "오류"}`, variant: "destructive" });
+      },
+    },
   });
 
   const createGradeMutation = useCreateGrade({
@@ -38,8 +42,11 @@ export default function InputPage() {
         queryClient.invalidateQueries({ queryKey: ["grades"] });
         setSubject("");
         setRawScore("");
-      }
-    }
+      },
+      onError: (e: any) => {
+        toast({ title: "저장 실패", description: `${e?.status ?? ""} ${e?.message ?? "오류"}`, variant: "destructive" });
+      },
+    },
   });
 
   return (
@@ -56,7 +63,7 @@ export default function InputPage() {
           <TabsTrigger value="activities">비교과 활동</TabsTrigger>
           <TabsTrigger value="records">세특 사항</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="profile" className="mt-4">
           <Card>
             <CardHeader>
@@ -76,7 +83,7 @@ export default function InputPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
+              <Button
                 onClick={() => saveProfileMutation.mutate({ data: { regionId: parseInt(regionId), targetSchoolTypes: ["SCIENCE"] } })}
                 disabled={!regionId || saveProfileMutation.isPending}
               >
@@ -98,7 +105,6 @@ export default function InputPage() {
                   <Select value={semester} onValueChange={setSemester}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1-1">1학년 1학기</SelectItem>
                       <SelectItem value="1-2">1학년 2학기</SelectItem>
                       <SelectItem value="2-1">2학년 1학기</SelectItem>
                       <SelectItem value="2-2">2학년 2학기</SelectItem>
@@ -115,9 +121,9 @@ export default function InputPage() {
                   <Input type="number" value={rawScore} onChange={e => setRawScore(e.target.value)} placeholder="100" />
                 </div>
               </div>
-              <Button 
-                onClick={() => createGradeMutation.mutate({ 
-                  data: { semester, subject, rawScore: parseInt(rawScore) } 
+              <Button
+                onClick={() => createGradeMutation.mutate({
+                  data: { semester, subject, rawScore: parseInt(rawScore) }
                 })}
                 disabled={!subject || !rawScore || createGradeMutation.isPending}
               >
